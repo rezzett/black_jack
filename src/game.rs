@@ -9,18 +9,16 @@ pub fn run() {
     let player = input("Enter your name:");
     let mut player = Player::new(&player);
     let mut dealer = Player::new("Dealer");
-    let mut player_pass = false;
-    let mut dealer_pass = false;
 
     loop {
         let mut deck = make_deck();
         let bot_decision = bot_decide_stop();
         loop {
             if dealer.score > bot_decision {
-                dealer_pass = true;
+                dealer.saved = true;
                 println!("The dealer saved");
             }
-            if !dealer_pass {
+            if !dealer.saved {
                 dealer.take_card(&mut deck);
                 println!("The dealer takes a card");
                 if dealer.is_overflow() {
@@ -29,7 +27,7 @@ pub fn run() {
                 }
             }
 
-            if !player_pass {
+            if !player.saved {
                 let decision = input("Do you want take one more card?(y/n)");
                 if decision.as_str() == "y" {
                     let card = player.take_card(&mut deck);
@@ -40,12 +38,12 @@ pub fn run() {
                         break;
                     }
                 } else {
-                    player_pass = true;
+                    player.saved = true;
                     println!("{} saved.", player.name);
                 }
             }
 
-            if dealer_pass && player_pass {
+            if dealer.saved && player.saved {
                 if dealer.score > player.score {
                     print_result(&dealer, &player, "\u{2666} You lose! \u{2665}");
                 } else if dealer.score < player.score {
@@ -58,10 +56,8 @@ pub fn run() {
         }
 
         if do_play_again() {
-            player.score = 0;
-            dealer.score = 0;
-            player_pass = false;
-            dealer_pass = false;
+            player.reset();
+            dealer.reset();
             continue;
         } else {
             println!("Thank you! Good bye!");
